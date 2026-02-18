@@ -1,0 +1,14 @@
+project "hello-cpp" do
+    version = "1.0.0"
+    lang = :cpp
+    std = "c++17"
+end
+
+compiler do
+    warnings = ["-Wall", "-Wextra"]
+end
+
+executable "hello" do
+    sources = ["src/main.cpp"]
+    includes = ["include/"]
+end

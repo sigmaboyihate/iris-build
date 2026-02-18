@@ -1,16 +1,17 @@
-#include "cli.hpp"
-#include <iostream>
+/*
+ * Iris Build System
+ * A modern build system with a unique scripting language
+ *
+ * Copyright (c) 2026 Iris Build Authors
+ * Licensed under GPL v3 License
+ */
 
+#include "cli/cli.hpp"
+#include "ui/terminal.hpp"
 
-int main(int argc, char* argv[]){
-    if (argc < 2) {
-        std::cout << "incorrect usage, for help do: 'iris --help'\n";
-        return 1;
-    }
-    std::string command = argv[1];
+int main(int argc, char* argv[]) {
+    iris::ui::Terminal::init();
 
-
-    if (command == "help" | command == "--help"){
-        iris::cli::helpmenu(); // you can find the thingies for args in src/cli 
-    }
+    iris::cli::CLI app("iris", "A modern build system with expressive syntax");
+    return app.run(argc, argv);
 }

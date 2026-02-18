@@ -1,0 +1,7 @@
+digraph IrisBuild {
+  rankdir=LR;
+  node [shape=box, style=filled];
+
+  "calculator" [fillcolor="#90EE90"];
+
+}

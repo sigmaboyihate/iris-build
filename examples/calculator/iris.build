@@ -1,0 +1,28 @@
+project "calculator" do
+    version = "1.0.0"
+    lang = :cpp
+    std = "c++17"
+end
+
+compiler do
+    warnings = ["-Wall", "-Wextra", "-Wpedantic"]
+    
+    if buildtype == "debug" do
+        flags = ["-g", "-O0", "-DDEBUG"]
+    end
+    
+    if buildtype == "release" do
+        flags = ["-O3", "-DNDEBUG"]
+    end
+end
+
+executable "calculator" do
+    sources = [
+        "src/main.cpp",
+        "src/lexer.cpp",
+        "src/parser.cpp",
+        "src/evaluator.cpp",
+        "src/calculator.cpp"
+    ]
+    includes = ["include/"]
+end
