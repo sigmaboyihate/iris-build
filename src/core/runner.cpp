@@ -38,7 +38,7 @@ RunResult Runner::run(const std::vector<std::string>& args) {
     std::string command;
     for (const auto& arg : args) {
         if (!command.empty()) command += " ";
-        // Quote args with spaces
+        // quote args with spaces
         if (arg.find(' ') != std::string::npos) {
             command += "\"" + arg + "\"";
         } else {
@@ -61,7 +61,7 @@ RunResult Runner::execute(const std::string& command) {
         full_command = "cd \"" + m_working_dir + "\" && " + command;
     }
 
-    // Set environment variables
+    // set environment variables
     for (const auto& [key, value] : m_env) {
 #ifdef _WIN32
         _putenv_s(key.c_str(), value.c_str());
@@ -71,10 +71,10 @@ RunResult Runner::execute(const std::string& command) {
     }
 
 #ifdef _WIN32
-    // Windows implementation
+    // windows implementation
     FILE* pipe = _popen(full_command.c_str(), "r");
 #else
-    // Unix implementation
+    // unix implementation
     FILE* pipe = popen((full_command + " 2>&1").c_str(), "r");
 #endif
 
@@ -129,7 +129,7 @@ std::vector<RunResult> Runner::run_parallel(const std::vector<std::string>& comm
 
     for (size_t i = 0; i < commands.size(); i++) {
         if (futures.size() >= static_cast<size_t>(max_parallel)) {
-            // Wait for one to complete
+            // wait for one to complete
             for (auto& f : futures) {
                 if (f.valid()) {
                     results.push_back(f.get());
@@ -143,7 +143,7 @@ std::vector<RunResult> Runner::run_parallel(const std::vector<std::string>& comm
         }));
     }
 
-    // Collect remaining results
+    // collect remaining results
     for (auto& f : futures) {
         if (f.valid()) {
             results.push_back(f.get());

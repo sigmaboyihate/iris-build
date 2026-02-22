@@ -11,7 +11,7 @@
 
 namespace iris::lang {
 
-// Value types in the interpreter
+// value types in the interpreter
 using Value = std::variant<
     std::nullptr_t,
     bool,
@@ -69,12 +69,12 @@ private:
     std::shared_ptr<Environment> m_current_env;
     core::BuildConfig m_config;
     
-    // Built-in functions
+    // builti n functions
     std::map<std::string, NativeFunction> m_native_functions;
     
     void register_builtins();
     
-    // Statement evaluation
+    // statement evaluation
     void eval_statement(const StmtPtr& stmt);
     void eval_project(const ProjectBlock* block);
     void eval_target(const TargetBlock* block);
@@ -87,7 +87,7 @@ private:
     void eval_assignment(const Assignment* stmt);
     void eval_block(const Block* block);
     
-    // Expression evaluation
+    // expression evaluation
     IrisValuePtr eval_expression(const ExprPtr& expr);
     IrisValuePtr eval_binary(const BinaryOp* expr);
     IrisValuePtr eval_unary(const UnaryOp* expr);
@@ -95,7 +95,7 @@ private:
     IrisValuePtr eval_member_access(const MemberAccess* expr);
     IrisValuePtr eval_index_access(const IndexAccess* expr);
     
-    // Helpers
+    // helpers
     IrisValuePtr make_value(std::nullptr_t);
     IrisValuePtr make_value(bool value);
     IrisValuePtr make_value(double value);

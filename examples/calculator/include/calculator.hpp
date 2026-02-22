@@ -11,7 +11,6 @@
 
 namespace calc {
 
-// Token types for lexer
 enum class TokenType {
     Number,
     Plus,
@@ -38,7 +37,6 @@ struct Token {
         : type(t), value(std::move(v)), position(pos) {}
 };
 
-// Lexer class
 class Lexer {
 public:
     explicit Lexer(const std::string& input);
@@ -56,7 +54,6 @@ private:
     Token read_identifier();
 };
 
-// AST Node types
 struct NumberNode;
 struct BinaryOpNode;
 struct UnaryOpNode;
@@ -177,7 +174,6 @@ private:
     std::string m_last_error;
 };
 
-// Exception classes
 class CalcError : public std::runtime_error {
 public:
     explicit CalcError(const std::string& msg) : std::runtime_error(msg) {}

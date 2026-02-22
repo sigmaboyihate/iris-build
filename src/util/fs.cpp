@@ -73,7 +73,7 @@ std::string read_file(const std::string& path) {
 }
 
 bool write_file(const std::string& path, const std::string& content) {
-    // Create parent directories if needed
+    // create parent directories if needed
     stdfs::path p(path);
     if (p.has_parent_path()) {
         stdfs::create_directories(p.parent_path());
@@ -225,7 +225,7 @@ std::vector<std::string> glob(const std::string& pattern) {
         base_path = ".";
     }
     
-    // Convert glob to regex
+    // convert glob to regex
     std::string regex_pattern;
     for (char c : glob_pattern) {
         switch (c) {
@@ -287,7 +287,7 @@ std::vector<std::string> glob(const std::string& pattern) {
 }
 
 bool matches_glob(const std::string& path, const std::string& pattern) {
-    // Convert glob to regex
+    // convert glob to regex (again)
     std::string regex_pattern;
     for (char c : pattern) {
         switch (c) {

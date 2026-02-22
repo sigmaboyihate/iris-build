@@ -23,7 +23,7 @@ void Terminal::init() {
     s_initialized = true;
 
 #ifdef _WIN32
-    // Enable ANSI escape codes on Windows
+    // enable ansi escape codes on widnows
     HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
     DWORD dwMode = 0;
     if (GetConsoleMode(hOut, &dwMode)) {
@@ -85,7 +85,7 @@ void Terminal::info(const std::string& label, const std::string& message) {
     }
     std::cout << "\n";
 }
-
+// took me a while to get a check mark
 void Terminal::success(const std::string& message) {
     std::cout << "  ";
     print_styled("✓", Color::Green, Style::Bold);
@@ -96,7 +96,7 @@ void Terminal::success(const std::string& message) {
 
 void Terminal::warning(const std::string& message) {
     std::cout << "  ";
-    print_styled("⚠", Color::Yellow, Style::Bold);
+    print_styled("!", Color::Yellow, Style::Bold);
     std::cout << " ";
     print_styled("Warning: ", Color::Yellow, Style::Bold);
     std::cout << message << "\n";
@@ -104,7 +104,7 @@ void Terminal::warning(const std::string& message) {
 
 void Terminal::error(const std::string& message) {
     std::cout << "  ";
-    print_styled("✗", Color::Red, Style::Bold);
+    print_styled("(X)", Color::Red, Style::Bold);
     std::cout << " ";
     print_styled("Error: ", Color::Red, Style::Bold);
     std::cout << message << "\n";
@@ -112,7 +112,7 @@ void Terminal::error(const std::string& message) {
 
 void Terminal::hint(const std::string& message) {
     std::cout << "  ";
-    print_styled("→", Color::Blue);
+    print_styled("->", Color::Blue);
     std::cout << " ";
     print_styled(message, Color::Gray);
     std::cout << "\n";
@@ -224,7 +224,7 @@ bool Terminal::supports_color() {
     
     std::string term_str(term);
     
-    // Check for color terminal
+    // am check for color terminal :D
     if (term_str.find("color") != std::string::npos ||
         term_str.find("xterm") != std::string::npos ||
         term_str.find("screen") != std::string::npos ||
@@ -234,11 +234,11 @@ bool Terminal::supports_color() {
         return true;
     }
     
-    // Check COLORTERM environment variable
+    // check colorterm environment variable
     const char* colorterm = std::getenv("COLORTERM");
     if (colorterm) return true;
     
-    // Check NO_COLOR
+    // check NO_COLOR
     const char* no_color = std::getenv("NO_COLOR");
     if (no_color) return false;
     

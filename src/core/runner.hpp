@@ -29,13 +29,13 @@ public:
     RunResult run(const std::string& command);
     RunResult run(const std::vector<std::string>& args);
 
-    // Async execution with callbacks
+    // async execution with callbacks
     void run_async(const std::string& command,
                    OutputCallback on_stdout = nullptr,
                    OutputCallback on_stderr = nullptr,
                    std::function<void(int)> on_complete = nullptr);
 
-    // Run multiple commands in parallel
+    // run multiple commands in parallel
     std::vector<RunResult> run_parallel(const std::vector<std::string>& commands,
                                          int max_parallel = 0);
 

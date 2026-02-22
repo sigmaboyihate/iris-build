@@ -8,13 +8,13 @@
 namespace iris::lang {
 
 enum class TokenType {
-    // Literals
+    // literals
     STRING,
     NUMBER,
     SYMBOL,        // :name
     IDENTIFIER,
     
-    // Keywords
+    // keywords
     PROJECT,
     EXECUTABLE,
     LIBRARY,
@@ -39,7 +39,7 @@ enum class TokenType {
     OR,
     NOT,
     
-    // Operators
+    // operators
     PLUS,
     MINUS,
     STAR,
@@ -55,7 +55,7 @@ enum class TokenType {
     PLUSEQ,
     MINUSEQ,
     
-    // Delimiters
+    // delimiters
     LPAREN,
     RPAREN,
     LBRACKET,
@@ -69,7 +69,7 @@ enum class TokenType {
     ARROW,         // ->
     FAT_ARROW,     // =>
     
-    // Special
+    // special
     INTERPOLATION_START,  // #{
     NEWLINE,
     INDENT,

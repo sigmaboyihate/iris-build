@@ -1,0 +1,14 @@
+{
+  "project": "hello-c",
+  "version": "1.0.0",
+  "language": "c",
+  "standard": "c17",
+  "build_type": "",
+  "backend": "ninja",
+  "targets": [
+    {
+      "name": "hello",
+      "type": "executable"
+    }
+  ]
+}

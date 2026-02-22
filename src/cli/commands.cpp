@@ -1,4 +1,5 @@
 #include "commands.hpp"
+#include <iomanip>
 #include "../core/engine.hpp"
 #include "../lang/parser.hpp"
 #include "../lang/interpreter.hpp"
@@ -18,7 +19,7 @@ namespace iris::cli::commands {
 
 int cmd_setup(const std::map<std::string, std::string>& options,
               const std::vector<std::string>& positional) {
-    using namespace ui;
+    using namespace iris::ui;
 
     std::string source_dir = positional.empty() ? "." : positional[0];
     std::string build_dir = options.at("builddir");
@@ -26,7 +27,7 @@ int cmd_setup(const std::map<std::string, std::string>& options,
 
     Terminal::header("Configuring Project");
 
-    // Check for iris.build file
+    // check for iris.build file
     std::string build_file = source_dir + "/iris.build";
     if (!fs::exists(build_file)) {
         Terminal::error("No iris.build found in " + source_dir);
@@ -38,7 +39,7 @@ int cmd_setup(const std::map<std::string, std::string>& options,
     Terminal::info("Build directory", build_dir);
     Terminal::info("Build type", build_type);
 
-    // Parse and interpret the build file
+    // parse and interpret the build file
     try {
         lang::Parser parser;
         auto ast = parser.parse_file(build_file);
@@ -50,10 +51,10 @@ int cmd_setup(const std::map<std::string, std::string>& options,
         
         auto config = interpreter.execute(ast);
 
-        // Create build directory
+        // create build directory
         fs::create_directories(build_dir);
 
-        // Generate build files
+        // generate build files
         core::Engine engine(config);
         engine.generate_build_files(build_dir, options.at("backend"));
 
@@ -71,9 +72,9 @@ int cmd_setup(const std::map<std::string, std::string>& options,
 
 int cmd_build(const std::map<std::string, std::string>& options,
               const std::vector<std::string>& positional) {
-    using namespace ui;
+    using namespace iris::ui;
 
-    std::string build_dir = "build";
+    std::string build_dir = options.count("builddir") && !options.at("builddir").empty() ? options.at("builddir") : "build";
     if (!fs::exists(build_dir)) {
         Terminal::error("Build directory not found");
         Terminal::hint("Run 'iris setup .' first to configure the project");
@@ -92,38 +93,34 @@ int cmd_build(const std::map<std::string, std::string>& options,
 
     if (clean_first) {
         Terminal::info("Cleaning build directory...");
-        // Clean implementation
+        // clean implementation
     }
 
     try {
         core::Engine engine;
         engine.load_from_build_dir(build_dir);
 
-        Progress progress;
-        progress.start("Compiling");
-
+        auto build_start = std::chrono::steady_clock::now();
+        
         int result = engine.build(
             target,
             jobs.empty() ? 0 : std::stoi(jobs),
             verbose,
-            [&progress](const std::string& task, int current, int total) {
-                progress.update(task, current, total);
-            }
+            nullptr
         );
 
-        progress.finish();
-
-        auto end_time = std::chrono::high_resolution_clock::now();
-        auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(
-            end_time - start_time).count();
+        auto build_end = std::chrono::steady_clock::now();
+        double secs = std::chrono::duration<double>(build_end - build_start).count();
 
         if (result == 0) {
-            std::cout << "\n";
-            Terminal::success("Build completed in " + 
-                std::to_string(duration / 1000.0) + "s");
+            Terminal::print_styled("  ✓ ", Color::Green, Style::Bold);
+            std::cout << "Build complete";
+            Terminal::print_styled(" [", Color::Gray);
+            std::cout << std::fixed << std::setprecision(2) << secs << "s";
+            Terminal::print_styled("]\n", Color::Gray);
         } else {
-            std::cout << "\n";
-            Terminal::error("Build failed");
+            Terminal::print_styled("  ✗ ", Color::Red, Style::Bold);
+            std::cout << "Build failed\n";
             return result;
         }
 
@@ -135,11 +132,13 @@ int cmd_build(const std::map<std::string, std::string>& options,
     return 0;
 }
 
+    using namespace iris::ui;
 int cmd_clean(const std::map<std::string, std::string>& options,
               const std::vector<std::string>& positional) {
-    using namespace ui;
+    using namespace iris::ui;
+    (void)positional;
 
-    std::string build_dir = "build";
+    std::string build_dir = options.count("builddir") && !options.at("builddir").empty() ? options.at("builddir") : "build";
     bool clean_all = options.count("all") && options.at("all") == "true";
 
     Terminal::header("Cleaning");
@@ -155,7 +154,7 @@ int cmd_clean(const std::map<std::string, std::string>& options,
         }
     } else {
         if (fs::exists(build_dir)) {
-            // Clean only build artifacts, keep config
+            // clean only build artifacts, keep config
             for (const auto& entry : fs::directory_iterator(build_dir)) {
                 if (entry.path().filename() != "iris-config.json") {
                     Terminal::info("Removing", entry.path().string());
@@ -171,7 +170,7 @@ int cmd_clean(const std::map<std::string, std::string>& options,
 
 int cmd_init(const std::map<std::string, std::string>& options,
              const std::vector<std::string>& positional) {
-    using namespace ui;
+    using namespace iris::ui;
 
     std::string name = options.count("name") && !options.at("name").empty() 
                        ? options.at("name") 
@@ -181,7 +180,7 @@ int cmd_init(const std::map<std::string, std::string>& options,
 
     Terminal::header("Initializing New Project");
 
-    // Check if iris.build already exists
+    // check if iris.build already exists
     if (fs::exists("iris.build")) {
         Terminal::error("iris.build already exists in this directory");
         return 1;
@@ -191,11 +190,11 @@ int cmd_init(const std::map<std::string, std::string>& options,
     Terminal::info("Language", lang);
     Terminal::info("Type", is_lib ? "library" : "executable");
 
-    // Create project structure
+    // create project structure
     fs::create_directories("src");
     fs::create_directories("include");
 
-    // Generate iris.build
+    // generate iris.build
     std::ofstream build_file("iris.build");
     build_file << R"(# Iris Build Configuration
 # Generated by iris init
@@ -252,7 +251,7 @@ end
 
     build_file.close();
 
-    // Create sample source file
+    // create sample source file
     std::string src_ext = (lang == "c") ? "c" : "cpp";
     std::ofstream src_file("src/main." + src_ext);
     
@@ -275,7 +274,7 @@ int main() {
     }
     src_file.close();
 
-    // Create .gitignore
+    // create .gitignore
     std::ofstream gitignore(".gitignore");
     gitignore << R"(# Build directories
 build/
@@ -311,9 +310,9 @@ build/
 
 int cmd_run(const std::map<std::string, std::string>& options,
             const std::vector<std::string>& positional) {
-    using namespace ui;
+    using namespace iris::ui;
 
-    // First build
+    // first build
     int build_result = cmd_build({{"verbose", "false"}}, {});
     if (build_result != 0) {
         return build_result;
@@ -324,12 +323,12 @@ int cmd_run(const std::map<std::string, std::string>& options,
     std::string target = options.count("target") ? options.at("target") : "";
     std::string args = options.count("args") ? options.at("args") : "";
 
-    // Find executable
+    // find executable
     std::string exe_path;
     if (!target.empty()) {
         exe_path = "build/" + target;
     } else {
-        // Find first executable in build directory
+        // ind first executable in build directory
         for (const auto& entry : fs::directory_iterator("build")) {
             if (fs::is_regular_file(entry) && 
                 (entry.path().extension().empty() || 
@@ -374,7 +373,7 @@ int cmd_run(const std::map<std::string, std::string>& options,
 
 int cmd_test(const std::map<std::string, std::string>& options,
              const std::vector<std::string>& positional) {
-    using namespace ui;
+    using namespace iris::ui;
 
     Terminal::header("Running Tests");
 
@@ -384,16 +383,16 @@ int cmd_test(const std::map<std::string, std::string>& options,
     int timeout = std::stoi(options.at("timeout"));
     (void)timeout;
 
-    // Build first
+    // build first
     int build_result = cmd_build({}, {});
     if (build_result != 0) {
         return build_result;
     }
 
-    // Find and run tests
+    // find and run tests
     int passed = 0, failed = 0, skipped = 0;
 
-    // Look for test executables
+    // look for test executables
     std::string test_dir = "build/tests";
     if (!fs::exists(test_dir)) {
         Terminal::warning("No tests found");
@@ -443,7 +442,7 @@ int cmd_test(const std::map<std::string, std::string>& options,
 
 int cmd_info(const std::map<std::string, std::string>& options,
              const std::vector<std::string>& positional) {
-    using namespace ui;
+    using namespace iris::ui;
 
     Terminal::header("Project Information");
 
@@ -499,7 +498,7 @@ int cmd_info(const std::map<std::string, std::string>& options,
 
 int cmd_graph(const std::map<std::string, std::string>& options,
               const std::vector<std::string>& positional) {
-    using namespace ui;
+    using namespace iris::ui;
 
     Terminal::header("Generating Dependency Graph");
 
@@ -533,6 +532,147 @@ int cmd_graph(const std::map<std::string, std::string>& options,
     } catch (const std::exception& e) {
         Terminal::error("Failed to generate graph: " + std::string(e.what()));
         return 1;
+    }
+
+    return 0;
+}
+
+
+int cmd_install(const std::map<std::string, std::string>& options,
+                const std::vector<std::string>& positional) {
+    using namespace iris::ui;
+    (void)positional;
+
+    std::string build_dir = options.count("builddir") && !options.at("builddir").empty()
+                            ? options.at("builddir") : "build";
+    std::string prefix = options.at("prefix");
+    std::string destdir = options.count("destdir") ? options.at("destdir") : "";
+    bool dry_run = options.count("dry-run") && options.at("dry-run") == "true";
+    bool do_strip = options.count("strip") && options.at("strip") == "true";
+
+    Terminal::header("Installing");
+
+    std::string config_file = build_dir + "/iris-config.json";
+    if (!fs::exists(config_file)) {
+        Terminal::error("No configuration found in " + build_dir);
+        Terminal::hint("Run 'iris setup' and 'iris build' first");
+        return 1;
+    }
+
+    std::string install_prefix = destdir.empty() ? prefix : destdir + prefix;
+    std::string bin_dir = install_prefix + "/bin";
+    std::string lib_dir = install_prefix + "/lib";
+
+    Terminal::info("Prefix", prefix);
+    if (!destdir.empty()) {
+        Terminal::info("DESTDIR", destdir);
+    }
+    Terminal::info("Binary dir", bin_dir);
+    Terminal::info("Library dir", lib_dir);
+    std::cout << "\n";
+
+    int installed_count = 0;
+    int failed_count = 0;
+
+    for (const auto& entry : fs::directory_iterator(build_dir)) {
+        if (!entry.is_regular_file()) continue;
+        
+        fs::path path = entry.path();
+        std::string filename = path.filename().string();
+        
+        if (filename == "build.ninja" || 
+            filename == "Makefile" ||
+            filename == "iris-config.json" ||
+            filename.find(".ninja") != std::string::npos ||
+            filename.find(".o") != std::string::npos ||
+            filename.find(".d") != std::string::npos) {
+            continue;
+        }
+
+        auto perms = fs::status(path).permissions();
+        bool is_executable = (perms & fs::perms::owner_exec) != fs::perms::none;
+        bool is_shared_lib = filename.find(".so") != std::string::npos ||
+                             filename.find(".dylib") != std::string::npos;
+        bool is_static_lib = filename.length() > 2 && 
+                             filename.substr(filename.length() - 2) == ".a";
+
+        std::string dest_dir;
+        std::string dest_path;
+        
+        if (is_shared_lib || is_static_lib) {
+            dest_dir = lib_dir;
+            dest_path = lib_dir + "/" + filename;
+        } else if (is_executable) {
+            dest_dir = bin_dir;
+            dest_path = bin_dir + "/" + filename;
+        } else {
+            continue;
+        }
+
+        if (dry_run) {
+            std::cout << "  ";
+            Terminal::print_styled("WOULD INSTALL", Color::Cyan);
+            std::cout << "  " << path.string() << " -> " << dest_path << "\n";
+            installed_count++;
+            continue;
+        }
+
+        try {
+            fs::create_directories(dest_dir);
+        } catch (const fs::filesystem_error& e) {
+            Terminal::error("Cannot create directory " + dest_dir + ": " + e.what());
+            Terminal::hint("Try running with sudo for system-wide installation");
+            failed_count++;
+            continue;
+        }
+
+        if (do_strip && is_executable && !is_static_lib) {
+            std::string strip_cmd = "strip " + path.string() + " 2>/dev/null";
+            std::system(strip_cmd.c_str());
+        }
+
+        try {
+            fs::copy_file(path, dest_path, fs::copy_options::overwrite_existing);
+            
+            if (is_executable) {
+                fs::permissions(dest_path, 
+                    fs::perms::owner_read | fs::perms::owner_write | fs::perms::owner_exec |
+                    fs::perms::group_read | fs::perms::group_exec |
+                    fs::perms::others_read | fs::perms::others_exec);
+            }
+            
+            std::cout << "  ";
+            Terminal::print_styled("INSTALL", Color::Green);
+            std::cout << "  " << filename;
+            Terminal::print_styled(" -> ", Color::Gray);
+            std::cout << dest_path << "\n";
+            installed_count++;
+            
+        } catch (const fs::filesystem_error& e) {
+            std::cout << "  ";
+            Terminal::print_styled("FAILED", Color::Red);
+            std::cout << "   " << filename << ": " << e.what() << "\n";
+            failed_count++;
+        }
+    }
+
+    std::cout << "\n";
+    
+    if (dry_run) {
+        Terminal::info("Dry run", "No files were modified");
+        Terminal::hint("Run without --dry-run to perform actual installation");
+    } else if (failed_count > 0) {
+        Terminal::warning("Installed " + std::to_string(installed_count) + 
+                         " files, " + std::to_string(failed_count) + " failed");
+        if (prefix.find("/usr") == 0) {
+            Terminal::hint("For system directories, try: sudo iris install");
+        }
+        return 1;
+    } else if (installed_count > 0) {
+        Terminal::success("Installed " + std::to_string(installed_count) + " files to " + prefix);
+    } else {
+        Terminal::warning("No files to install");
+        Terminal::hint("Make sure you have built the project with 'iris build'");
     }
 
     return 0;

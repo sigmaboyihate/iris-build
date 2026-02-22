@@ -75,7 +75,7 @@ Token Lexer::next_token() {
     
     char c = current();
     
-    // Comments
+    // comments
     if (c == '#' && peek_char() != '{') {
         skip_comment();
         return next_token();
@@ -85,33 +85,33 @@ Token Lexer::next_token() {
         return next_token();
     }
     
-    // Newlines (significant in some contexts)
+    // newlines (significant in some contexts)
     if (c == '\n') {
         advance();
         return make_token(TokenType::NEWLINE);
     }
     
-    // Strings
+    // strings
     if (c == '"' || c == '\'') {
         return scan_string();
     }
     
-    // Numbers
+    // numbers
     if (is_digit(c)) {
         return scan_number();
     }
     
-    // Symbols (:name)
+    // symbols (:name)
     if (c == ':' && is_alpha(peek_char())) {
         return scan_symbol();
     }
     
-    // Identifiers and keywords
+    // identifiers and keywords
     if (is_alpha(c) || c == '_') {
         return scan_identifier_or_keyword();
     }
     
-    // Operators and delimiters
+    // operators and delimiters
     advance();
     switch (c) {
         case '(': return make_token(TokenType::LPAREN);
@@ -219,7 +219,7 @@ Token Lexer::make_token(TokenType type, const std::string& value) {
 
 Token Lexer::scan_string() {
     char quote = current();
-    advance();  // Skip opening quote
+    advance();  // skip opening quote
     
     std::string value;
     
@@ -248,7 +248,7 @@ Token Lexer::scan_string() {
         return make_token(TokenType::ERROR, "Unterminated string");
     }
     
-    advance();  // Skip closing quote
+    advance();  // skip closing quote
     return make_token(TokenType::STRING, value);
 }
 
@@ -290,7 +290,7 @@ Token Lexer::scan_identifier_or_keyword() {
 }
 
 Token Lexer::scan_symbol() {
-    advance();  // Skip the colon
+    advance();  // skip the colon
     
     std::string value;
     while (!is_at_end() && (is_alphanumeric(current()) || current() == '_')) {

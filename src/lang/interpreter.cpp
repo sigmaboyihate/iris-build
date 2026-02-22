@@ -62,7 +62,7 @@ std::string IrisValue::to_string() const {
     return "unknown";
 }
 
-// Environment implementation
+// environment implementation
 
 Environment::Environment(std::shared_ptr<Environment> parent) 
     : m_parent(parent) {}
@@ -98,7 +98,7 @@ bool Environment::exists(const std::string& name) const {
     return false;
 }
 
-// Interpreter implementation
+// interpreter implementation
 
 Interpreter::Interpreter() {
     m_global_env = std::make_shared<Environment>();
@@ -107,7 +107,7 @@ Interpreter::Interpreter() {
 }
 
 void Interpreter::register_builtins() {
-    // glob function - find files matching a pattern
+    // glob function find files matching a pattern
     m_native_functions["glob"] = [](const std::vector<IrisValuePtr>& args) {
         auto result = std::make_shared<IrisValue>();
         std::vector<std::shared_ptr<IrisValue>> files;
@@ -123,7 +123,7 @@ void Interpreter::register_builtins() {
         
         std::string glob_pattern = fs::path(pattern).filename().string();
         
-        // Simple glob matching - convert glob to regex
+        // simple glob matching - convert glob to regex
         std::string regex_pattern = glob_pattern;
         std::string final_regex;
         
@@ -168,7 +168,7 @@ void Interpreter::register_builtins() {
         return result;
     };
     
-    // find_package function - locate system packages
+    // find_package function locate system packages
     m_native_functions["find_package"] = [this](const std::vector<IrisValuePtr>& args) {
         auto result = std::make_shared<IrisValue>();
         
@@ -179,7 +179,7 @@ void Interpreter::register_builtins() {
         
         std::string pkg_name = args[0]->as_string();
         
-        // Try pkg-config first
+        // try pkg-config first
         std::string cmd = "pkg-config --exists " + pkg_name + " 2>/dev/null";
         int ret = std::system(cmd.c_str());
         
@@ -213,7 +213,7 @@ void Interpreter::register_builtins() {
         
         std::string lib_name = args[0]->as_string();
         
-        // Common library paths
+        // common library paths
         std::vector<std::string> search_paths = {
             "/usr/lib",
             "/usr/local/lib",
@@ -275,7 +275,7 @@ void Interpreter::register_builtins() {
         return std::make_shared<IrisValue>();
     };
     
-    // shell function - execute shell command
+    // shell function execute shell command
     m_native_functions["shell"] = [](const std::vector<IrisValuePtr>& args) {
         if (args.empty() || !args[0]->is_string()) {
             return std::make_shared<IrisValue>();
@@ -283,7 +283,7 @@ void Interpreter::register_builtins() {
         
         std::string cmd = args[0]->as_string();
         
-        // Capture output
+        // capture output
         std::array<char, 256> buffer;
         std::string output;
         
@@ -295,7 +295,7 @@ void Interpreter::register_builtins() {
             pclose(pipe);
         }
         
-        // Remove trailing newline
+        // remove trailing newline
         if (!output.empty() && output.back() == '\n') {
             output.pop_back();
         }
@@ -305,7 +305,7 @@ void Interpreter::register_builtins() {
         return result;
     };
     
-    // run function - execute command and return exit code
+    // run function execute command and return exit code
     m_native_functions["run"] = [](const std::vector<IrisValuePtr>& args) {
         if (args.empty() || !args[0]->is_string()) {
             auto result = std::make_shared<IrisValue>();
@@ -319,7 +319,7 @@ void Interpreter::register_builtins() {
         return result;
     };
     
-    // env function - get environment variable
+    // env function get environment variable
     m_native_functions["env"] = [](const std::vector<IrisValuePtr>& args) {
         auto result = std::make_shared<IrisValue>();
         
@@ -333,7 +333,7 @@ void Interpreter::register_builtins() {
         return result;
     };
     
-    // platform function - get current platform
+    // platform function get current platform
     m_native_functions["platform"] = [](const std::vector<IrisValuePtr>& args) {
         auto result = std::make_shared<IrisValue>();
 #if defined(_WIN32)
@@ -367,7 +367,7 @@ void Interpreter::register_builtins() {
         return result;
     };
     
-    // join function - join array elements with separator
+    // join function join array elements with separator
     m_native_functions["join"] = [](const std::vector<IrisValuePtr>& args) {
         auto result = std::make_shared<IrisValue>();
         
@@ -389,7 +389,7 @@ void Interpreter::register_builtins() {
         return result;
     };
     
-    // split function - split string into array
+    // split function split string into array
     m_native_functions["split"] = [](const std::vector<IrisValuePtr>& args) {
         auto result = std::make_shared<IrisValue>();
         std::vector<std::shared_ptr<IrisValue>> parts;
@@ -420,7 +420,7 @@ void Interpreter::register_builtins() {
         return result;
     };
     
-    // contains function - check if array contains element
+    // contains function check if array contains element
     m_native_functions["contains"] = [](const std::vector<IrisValuePtr>& args) {
         auto result = std::make_shared<IrisValue>();
         result->data = false;
@@ -442,7 +442,7 @@ void Interpreter::register_builtins() {
         return result;
     };
     
-    // len function - get length of string or array
+    // len function get length of string or array
     m_native_functions["len"] = [](const std::vector<IrisValuePtr>& args) {
         auto result = std::make_shared<IrisValue>();
         
@@ -569,7 +569,7 @@ std::string Interpreter::get_variable(const std::string& name) const {
 core::BuildConfig Interpreter::execute(const AST& ast) {
     m_config = core::BuildConfig();
     
-    // Set up built-in variables
+    // set up built in variables
     m_global_env->define("platform", m_native_functions["platform"]({}));
     m_global_env->define("arch", m_native_functions["arch"]({}));
     
@@ -602,7 +602,7 @@ void Interpreter::eval_statement(const StmtPtr& stmt) {
     } else if (auto e = std::dynamic_pointer_cast<ExpressionStatement>(stmt)) {
         eval_expression(e->expression);
     } else if (auto r = std::dynamic_pointer_cast<ReturnStatement>(stmt)) {
-        // Return statements are handled in function calls
+        // return statements are handled in function calls
         if (r->value) {
             throw eval_expression(r->value);
         }
@@ -617,7 +617,7 @@ void Interpreter::eval_project(const ProjectBlock* block) {
     
     eval_block(block->body.get());
     
-    // Extract project settings
+    // extract project settings
     if (auto version = m_current_env->get("version")) {
         m_config.version = version->as_string();
     }
@@ -628,7 +628,7 @@ void Interpreter::eval_project(const ProjectBlock* block) {
         m_config.standard = std_val->as_string();
     }
     if (auto license = m_current_env->get("license")) {
-        // Store license info if needed
+        // store license info if needed
     }
     
     m_current_env = prev_env;
@@ -653,7 +653,7 @@ void Interpreter::eval_target(const TargetBlock* block) {
     
     eval_block(block->body.get());
     
-    // Extract target settings
+    // extract target settings
     if (auto sources = m_current_env->get("sources")) {
         target.sources = value_to_string_list(sources);
     }
@@ -691,7 +691,7 @@ void Interpreter::eval_compiler(const CompilerBlock* block) {
     
     eval_block(block->body.get());
     
-    // Extract compiler settings
+    // extract compiler settings
     if (auto flags = m_current_env->get("flags")) {
         auto flag_list = value_to_string_list(flags);
         m_config.global_flags.insert(m_config.global_flags.end(), 
@@ -713,7 +713,7 @@ void Interpreter::eval_compiler(const CompilerBlock* block) {
 }
 
 void Interpreter::eval_task(const TaskBlock* block) {
-    // Store task as a callable function
+    // store task as a callable function
     auto task_func = [this, block](const std::vector<IrisValuePtr>& args) {
         auto prev_env = m_current_env;
         m_current_env = std::make_shared<Environment>(m_current_env);
@@ -726,7 +726,7 @@ void Interpreter::eval_task(const TaskBlock* block) {
     
     m_native_functions["task_" + block->name] = task_func;
     
-    // Also store metadata about the task
+    // also store metadata about the task
     auto task_val = std::make_shared<IrisValue>();
     task_val->data = block->name;
     m_global_env->define("__task_" + block->name, task_val);
@@ -771,17 +771,17 @@ void Interpreter::eval_for(const ForLoop* stmt) {
 }
 
 void Interpreter::eval_function_def(const FunctionDef* def) {
-    // Capture the function definition
+    // capture the function definition
     auto func = [this, def](const std::vector<IrisValuePtr>& args) -> IrisValuePtr {
         auto prev_env = m_current_env;
         m_current_env = std::make_shared<Environment>(m_global_env);
         
-        // Bind parameters
+        // bind parameters
         for (size_t i = 0; i < def->parameters.size() && i < args.size(); i++) {
             m_current_env->define(def->parameters[i], args[i]);
         }
         
-        // Execute body
+        // execute body
         IrisValuePtr result = std::make_shared<IrisValue>();
         try {
             eval_block(def->body.get());
@@ -821,7 +821,7 @@ IrisValuePtr Interpreter::eval_expression(const ExprPtr& expr) {
     }
     
     if (auto sym = std::dynamic_pointer_cast<Symbol>(expr)) {
-        // Symbols are like strings but can be used for enums
+        // symbols are like strings but can be used for enums
         return make_value(sym->name);
     }
     
@@ -829,9 +829,9 @@ IrisValuePtr Interpreter::eval_expression(const ExprPtr& expr) {
         auto value = m_current_env->get(id->name);
         if (value) return value;
         
-        // Check if it's a builtin
+        // check if its a builtin
         if (m_native_functions.count(id->name)) {
-            // Return a callable placeholder
+            // return a callable placeholder
             auto func_val = std::make_shared<IrisValue>();
             func_val->data = "__func:" + id->name;
             return func_val;
@@ -888,12 +888,12 @@ IrisValuePtr Interpreter::eval_binary(const BinaryOp* expr) {
     auto left = eval_expression(expr->left);
     auto right = eval_expression(expr->right);
     
-    // String concatenation
+    // string concatenation
     if (expr->op == "+" && (left->is_string() || right->is_string())) {
         return make_value(left->as_string() + right->as_string());
     }
     
-    // Numeric operations
+    // numeric operations
     if (expr->op == "+") {
         return make_value(left->as_number() + right->as_number());
     }
@@ -914,7 +914,7 @@ IrisValuePtr Interpreter::eval_binary(const BinaryOp* expr) {
         ));
     }
     
-    // Comparison
+    // comparison
     if (expr->op == "==" || expr->op == "!=") {
         bool eq = false;
         if (left->is_string() && right->is_string()) {
@@ -942,7 +942,7 @@ IrisValuePtr Interpreter::eval_binary(const BinaryOp* expr) {
         return make_value(left->as_number() >= right->as_number());
     }
     
-    // Logical
+    // logical
     if (expr->op == "and") {
         return make_value(is_truthy(left) && is_truthy(right));
     }
@@ -967,13 +967,13 @@ IrisValuePtr Interpreter::eval_unary(const UnaryOp* expr) {
 }
 
 IrisValuePtr Interpreter::eval_call(const FunctionCall* expr) {
-    // Evaluate arguments
+    // evaluate arguments
     std::vector<IrisValuePtr> args;
     for (const auto& arg : expr->arguments) {
         args.push_back(eval_expression(arg));
     }
     
-    // Check native functions
+    // check native functions
     auto it = m_native_functions.find(expr->name);
     if (it != m_native_functions.end()) {
         return it->second(args);
@@ -993,7 +993,7 @@ IrisValuePtr Interpreter::eval_member_access(const MemberAccess* expr) {
         }
     }
     
-    // Array methods
+    // array methods
     if (object->is_array()) {
         auto& arr = std::get<std::vector<IrisValuePtr>>(object->data);
         
@@ -1011,7 +1011,7 @@ IrisValuePtr Interpreter::eval_member_access(const MemberAccess* expr) {
         }
     }
     
-    // String methods
+    // string methods
     if (object->is_string()) {
         std::string str = object->as_string();
         

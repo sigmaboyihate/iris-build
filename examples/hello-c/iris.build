@@ -1,0 +1,13 @@
+project "hello-c" do
+    version = "1.0.0"
+    lang = :c
+    std = "c17"
+end
+
+compiler do
+    warnings = ["-Wall", "-Wextra"]
+end
+
+executable "hello" do
+    sources = ["main.c"]
+end

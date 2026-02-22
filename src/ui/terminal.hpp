@@ -38,17 +38,17 @@ public:
     static void init();
     static void reset();
     
-    // Color and style
+    // color and style
     static void set_color(Color fg);
     static void set_color(Color fg, Color bg);
     static void set_style(Style style);
     static void reset_style();
     
-    // Formatted output
+    // formatted output
     static void print_styled(const std::string& text, Color color, 
                              Style style = Style::Normal);
     
-    // Status messages
+    // status messages
     static void info(const std::string& label, const std::string& message = "");
     static void success(const std::string& message);
     static void warning(const std::string& message);
@@ -56,17 +56,17 @@ public:
     static void hint(const std::string& message);
     static void debug(const std::string& message);
     
-    // Headers and formatting
+    // headers and formatting
     static void header(const std::string& title);
     static void subheader(const std::string& title);
     static void separator(char c = '-', int width = 60);
     static void newline();
     
-    // Input
+    // input
     static std::string prompt(const std::string& message);
     static bool confirm(const std::string& message, bool default_yes = true);
     
-    // Utility
+    // utility
     static int get_width();
     static bool is_tty();
     static bool supports_color();

@@ -1,0 +1,37 @@
+project "iris" do
+    version = "0.1.0"
+    lang = :cpp
+    std = "c++17"
+end
+
+compiler do
+    warnings = ["-Wall", "-Wextra", "-Wpedantic", "-Wno-unused-parameter"]
+    
+    if buildtype == "debug" do
+        flags = ["-g", "-O0", "-DDEBUG"]
+    end
+    
+    if buildtype == "release" do
+        flags = ["-O3", "-DNDEBUG", "-march=native"]
+    end
+end
+
+executable "iris" do
+    sources = [
+        "src/main.cpp",
+        "src/cli/cli.cpp",
+        "src/cli/commands.cpp",
+        "src/core/engine.cpp",
+        "src/core/graph.cpp",
+        "src/core/cache.cpp",
+        "src/core/runner.cpp",
+        "src/lang/lexer.cpp",
+        "src/lang/parser.cpp",
+        "src/lang/interpreter.cpp",
+        "src/ui/terminal.cpp",
+        "src/ui/progress.cpp",
+        "src/util/fs.cpp",
+        "src/util/hash.cpp"
+    ]
+    includes = ["src/"]
+end

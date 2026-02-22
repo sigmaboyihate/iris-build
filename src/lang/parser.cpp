@@ -87,14 +87,14 @@ StmtPtr Parser::parse_statement() {
 StmtPtr Parser::parse_project_block() {
     auto stmt = std::make_shared<ProjectBlock>();
     
-    // Project name (string)
+    // project name (string)
     Token name_token = consume(TokenType::STRING, "Expected project name");
     stmt->name = name_token.value;
     
     // do
     consume(TokenType::DO, "Expected 'do' after project name");
     
-    // Block body
+    // block body
     stmt->body = parse_block();
     
     // end
@@ -107,14 +107,14 @@ StmtPtr Parser::parse_target_block(const std::string& type) {
     auto stmt = std::make_shared<TargetBlock>();
     stmt->target_type = type;
     
-    // Target name (string)
+    // target name (string)
     Token name_token = consume(TokenType::STRING, "Expected target name");
     stmt->name = name_token.value;
     
     // do
     consume(TokenType::DO, "Expected 'do' after target name");
     
-    // Block body
+    // block body
     stmt->body = parse_block();
     
     // end
@@ -129,7 +129,7 @@ StmtPtr Parser::parse_compiler_block() {
     // do
     consume(TokenType::DO, "Expected 'do' after 'compiler'");
     
-    // Block body
+    // block body
     stmt->body = parse_block();
     
     // end
@@ -141,7 +141,7 @@ StmtPtr Parser::parse_compiler_block() {
 StmtPtr Parser::parse_dependency_block() {
     auto stmt = std::make_shared<DependencyBlock>();
     
-    // Dependency name
+    // dependency name
     if (check(TokenType::STRING)) {
         stmt->name = advance().value;
     } else if (check(TokenType::IDENTIFIER)) {
@@ -153,7 +153,7 @@ StmtPtr Parser::parse_dependency_block() {
     // do
     consume(TokenType::DO, "Expected 'do' after dependency name");
     
-    // Block body
+    // block body
     stmt->body = parse_block();
     
     // end
@@ -165,7 +165,7 @@ StmtPtr Parser::parse_dependency_block() {
 StmtPtr Parser::parse_task_block() {
     auto stmt = std::make_shared<TaskBlock>();
     
-    // Task name (symbol or string)
+    // task name (symbol or string)
     if (check(TokenType::SYMBOL)) {
         stmt->name = advance().value;
     } else if (check(TokenType::STRING)) {
@@ -177,7 +177,7 @@ StmtPtr Parser::parse_task_block() {
     // do
     consume(TokenType::DO, "Expected 'do' after task name");
     
-    // Block body
+    // block body
     stmt->body = parse_block();
     
     // end
@@ -189,19 +189,19 @@ StmtPtr Parser::parse_task_block() {
 StmtPtr Parser::parse_if_statement() {
     auto stmt = std::make_shared<IfStatement>();
     
-    // Condition
+    // condition
     stmt->condition = parse_expression();
     
     // do
     consume(TokenType::DO, "Expected 'do' after if condition");
     
-    // Then block
+    // then block
     stmt->then_block = parse_block();
     
-    // Optional else
+    // optional else
     if (match(TokenType::ELSE)) {
         if (match(TokenType::IF)) {
-            // else if - create a new block containing just the if statement
+            // else if create a new block containing just the if statement
             auto else_block = std::make_shared<Block>();
             else_block->statements.push_back(parse_if_statement());
             stmt->else_block = else_block;
@@ -210,7 +210,7 @@ StmtPtr Parser::parse_if_statement() {
         }
     }
     
-    // end (only if no else-if chain)
+    // end (only if no else if chain)
     if (!stmt->else_block || 
         stmt->else_block->statements.empty() ||
         stmt->else_block->statements[0]->type_name() != "IfStatement") {
@@ -223,13 +223,13 @@ StmtPtr Parser::parse_if_statement() {
 StmtPtr Parser::parse_unless_statement() {
     auto stmt = std::make_shared<UnlessStatement>();
     
-    // Condition
+    // condition
     stmt->condition = parse_expression();
     
     // do
     consume(TokenType::DO, "Expected 'do' after unless condition");
     
-    // Body
+    // body
     stmt->body = parse_block();
     
     // end
@@ -241,20 +241,20 @@ StmtPtr Parser::parse_unless_statement() {
 StmtPtr Parser::parse_for_loop() {
     auto stmt = std::make_shared<ForLoop>();
     
-    // Variable name
+    // variable name
     Token var = consume(TokenType::IDENTIFIER, "Expected variable name");
     stmt->variable = var.value;
     
     // in
     consume(TokenType::IN, "Expected 'in' in for loop");
     
-    // Iterable expression
+    // iterable expression
     stmt->iterable = parse_expression();
     
     // do
     consume(TokenType::DO, "Expected 'do' after for loop header");
     
-    // Body
+    // body
     stmt->body = parse_block();
     
     // end
@@ -266,11 +266,11 @@ StmtPtr Parser::parse_for_loop() {
 StmtPtr Parser::parse_function_def() {
     auto stmt = std::make_shared<FunctionDef>();
     
-    // Function name
+    // function name
     Token name = consume(TokenType::IDENTIFIER, "Expected function name");
     stmt->name = name.value;
     
-    // Parameters
+    // parameters
     consume(TokenType::LPAREN, "Expected '(' after function name");
     
     if (!check(TokenType::RPAREN)) {
@@ -285,7 +285,7 @@ StmtPtr Parser::parse_function_def() {
     // do
     consume(TokenType::DO, "Expected 'do' after function parameters");
     
-    // Body
+    // body
     stmt->body = parse_block();
     
     // end
@@ -295,7 +295,7 @@ StmtPtr Parser::parse_function_def() {
 }
 
 StmtPtr Parser::parse_assignment_or_expression() {
-    // Check if this is an assignment
+    // check if this is an assignment
     if (check(TokenType::IDENTIFIER)) {
         Token id = current_token();
         advance();
@@ -319,11 +319,11 @@ StmtPtr Parser::parse_assignment_or_expression() {
             return stmt;
         }
         
-        // Not an assignment, backtrack and parse as expression
+        // not an assignment, backtrack and parse as expression
         m_current--;
     }
     
-    // Expression statement
+    // expression statement
     auto stmt = std::make_shared<ExpressionStatement>();
     stmt->expression = parse_expression();
     return stmt;
@@ -459,17 +459,17 @@ ExprPtr Parser::parse_call() {
     
     while (true) {
         if (match(TokenType::LPAREN)) {
-            // Function call
+            // function call
             auto call = std::make_shared<FunctionCall>();
             
-            // Get the function name from the expression
+            // get the function name from the expression
             if (auto id = std::dynamic_pointer_cast<Identifier>(expr)) {
                 call->name = id->name;
             } else {
                 throw error("Expected function name");
             }
             
-            // Parse arguments
+            // paarse arguments
             if (!check(TokenType::RPAREN)) {
                 do {
                     call->arguments.push_back(parse_expression());
@@ -480,7 +480,7 @@ ExprPtr Parser::parse_call() {
             expr = call;
             
         } else if (match(TokenType::DOT)) {
-            // Member access
+            // member access
             Token member = consume(TokenType::IDENTIFIER, "Expected member name");
             auto access = std::make_shared<MemberAccess>();
             access->object = expr;
@@ -488,7 +488,7 @@ ExprPtr Parser::parse_call() {
             expr = access;
             
         } else if (match(TokenType::LBRACKET)) {
-            // Index access
+            // index access
             auto access = std::make_shared<IndexAccess>();
             access->object = expr;
             access->index = parse_expression();
@@ -504,7 +504,7 @@ ExprPtr Parser::parse_call() {
 }
 
 ExprPtr Parser::parse_primary() {
-    // Literals
+    // literals
     if (match(TokenType::STRING)) {
         auto expr = std::make_shared<StringLiteral>();
         expr->value = previous_token().value;
@@ -543,17 +543,17 @@ ExprPtr Parser::parse_primary() {
         return expr;
     }
     
-    // Array literal
+    // array literal
     if (match(TokenType::LBRACKET)) {
         return parse_array();
     }
     
-    // Hash literal
+    // hash literal
     if (match(TokenType::LBRACE)) {
         return parse_hash();
     }
     
-    // Grouped expression
+    // grouped expression
     if (match(TokenType::LPAREN)) {
         auto expr = parse_expression();
         consume(TokenType::RPAREN, "Expected ')' after expression");
@@ -596,7 +596,7 @@ ExprPtr Parser::parse_hash() {
     return expr;
 }
 
-// Token helpers
+// token helpers
 
 Token Parser::current_token() const {
     if (m_current >= m_tokens.size()) {

@@ -7,7 +7,7 @@
 #else
 #define LOG(msg)
 #endif
-
+// THIS ASCII ART WAS HARD
 void print_banner() {
     std::cout << R"(
   ╦╦═╗╦╔═╗  ╔╗ ╦ ╦╦╦  ╔╦╗

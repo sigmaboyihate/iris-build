@@ -8,7 +8,7 @@
 
 namespace iris::lang {
 
-// Forward declarations
+// forward declarations
 struct ASTNode;
 struct Expression;
 struct Statement;
@@ -17,9 +17,7 @@ using ASTNodePtr = std::shared_ptr<ASTNode>;
 using ExprPtr = std::shared_ptr<Expression>;
 using StmtPtr = std::shared_ptr<Statement>;
 
-// ============================================================================
-// Expressions
-// ============================================================================
+// expressions
 
 struct Expression {
     virtual ~Expression() = default;
@@ -43,7 +41,7 @@ struct BoolLiteral : Expression {
 };
 
 struct Symbol : Expression {
-    std::string name;  // Without the leading colon
+    std::string name;  // without the leading colon
     std::string type_name() const override { return "Symbol"; }
 };
 
@@ -98,9 +96,7 @@ struct StringInterpolation : Expression {
     std::string type_name() const override { return "StringInterpolation"; }
 };
 
-// ============================================================================
-// Statements
-// ============================================================================
+// statements
 
 struct Statement {
     virtual ~Statement() = default;
@@ -143,7 +139,7 @@ struct DependencyBlock : Statement {
 };
 
 struct TaskBlock : Statement {
-    std::string name;  // Can be a string or symbol
+    std::string name;  // can be a string or symbol
     std::shared_ptr<Block> body;
     std::string type_name() const override { return "TaskBlock"; }
 };
@@ -151,7 +147,7 @@ struct TaskBlock : Statement {
 struct IfStatement : Statement {
     ExprPtr condition;
     std::shared_ptr<Block> then_block;
-    std::shared_ptr<Block> else_block;  // Optional
+    std::shared_ptr<Block> else_block;  // optional
     std::string type_name() const override { return "IfStatement"; }
 };
 
@@ -181,13 +177,11 @@ struct ExpressionStatement : Statement {
 };
 
 struct ReturnStatement : Statement {
-    ExprPtr value;  // Optional
+    ExprPtr value;  // optional
     std::string type_name() const override { return "ReturnStatement"; }
 };
 
-// ============================================================================
-// AST Root
-// ============================================================================
+// AST root
 
 struct AST {
     std::vector<StmtPtr> statements;

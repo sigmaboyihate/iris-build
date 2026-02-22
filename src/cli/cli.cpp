@@ -14,7 +14,7 @@ CLI::CLI(const std::string& name, const std::string& description)
 }
 
 void CLI::register_default_commands() {
-    // Setup command
+    // setup command
     add_command({
         "setup",
         "Configure a build directory",
@@ -28,7 +28,7 @@ void CLI::register_default_commands() {
         commands::cmd_setup
     });
 
-    // Build command
+    // build command
     add_command({
         "build",
         "Build the project",
@@ -36,13 +36,15 @@ void CLI::register_default_commands() {
             {"-j", "--jobs", "Number of parallel jobs", true, ""},
             {"-v", "--verbose", "Verbose output", false, ""},
             {"-c", "--clean", "Clean before building", false, ""},
-            {"", "--target", "Specific target to build", true, ""}
+            {"", "--target", "Specific target to build", true, ""},
+            {"", "--builddir", "Build directory path", true, "build"},
+            {"", "--builddir", "Build directory path", true, "build"}
         },
         {},
         commands::cmd_build
     });
 
-    // Clean command
+    // clean command
     add_command({
         "clean",
         "Clean build artifacts",
@@ -53,7 +55,7 @@ void CLI::register_default_commands() {
         commands::cmd_clean
     });
 
-    // Init command
+    // init command
     add_command({
         "init",
         "Initialize a new Iris project",
@@ -67,7 +69,7 @@ void CLI::register_default_commands() {
         commands::cmd_init
     });
 
-    // Run command
+    // run command
     add_command({
         "run",
         "Build and run an executable target",
@@ -79,7 +81,23 @@ void CLI::register_default_commands() {
         commands::cmd_run
     });
 
-    // Test command
+    // install command
+    add_command({
+        "install",
+        "Install built targets to system",
+        {
+            {"-p", "--prefix", "Installation prefix", true, "/usr/local"},
+            {"", "--builddir", "Build directory path", true, "build"},
+            {"", "--destdir", "Destination directory (for packaging)", true, ""},
+            {"-n", "--dry-run", "Show what would be installed", false, ""},
+            {"", "--strip", "Strip binaries before installing", false, ""}
+        },
+        {},
+        commands::cmd_install
+    });
+
+
+    // ttest command
     add_command({
         "test",
         "Run project tests",
@@ -92,7 +110,7 @@ void CLI::register_default_commands() {
         commands::cmd_test
     });
 
-    // Info command
+    // info command
     add_command({
         "info",
         "Show project information",
@@ -105,7 +123,7 @@ void CLI::register_default_commands() {
         commands::cmd_info
     });
 
-    // Graph command
+    // graph command
     add_command({
         "graph",
         "Generate dependency graph",
@@ -117,7 +135,7 @@ void CLI::register_default_commands() {
         commands::cmd_graph
     });
 
-    // Global options
+    // global options
     add_global_option({"-h", "--help", "Show help message", false, ""});
     add_global_option({"-V", "--version", "Show version", false, ""});
     add_global_option({"", "--color", "Color output (auto/always/never)", true, "auto"});
@@ -142,7 +160,7 @@ int CLI::run(int argc, char* argv[]) {
 
     std::string first_arg = argv[1];
 
-    // Check global options first
+    // check global options first
     if (first_arg == "-h" || first_arg == "--help") {
         print_help();
         return 0;
@@ -152,7 +170,7 @@ int CLI::run(int argc, char* argv[]) {
         return 0;
     }
 
-    // Find command
+    // find command
     auto cmd_it = std::find_if(m_commands.begin(), m_commands.end(),
         [&first_arg](const Command& c) { return c.name == first_arg; });
 
@@ -162,7 +180,7 @@ int CLI::run(int argc, char* argv[]) {
         return 1;
     }
 
-    // Check for command-specific help
+    // check for command specific help
     for (int i = 2; i < argc; i++) {
         std::string arg = argv[i];
         if (arg == "-h" || arg == "--help") {
@@ -171,7 +189,7 @@ int CLI::run(int argc, char* argv[]) {
         }
     }
 
-    // Parse arguments and run command
+    // parse arguments and run command
     try {
         auto [options, positional] = parse_args(argc, argv, &(*cmd_it));
         return cmd_it->handler(options, positional);
@@ -186,7 +204,7 @@ CLI::parse_args(int argc, char* argv[], const Command* cmd) {
     std::map<std::string, std::string> options;
     std::vector<std::string> positional;
 
-    // Set defaults
+    // set defaults
     for (const auto& opt : cmd->options) {
         if (!opt.default_value.empty()) {
             std::string key = opt.long_name.empty() ? opt.short_name : opt.long_name;
@@ -200,14 +218,14 @@ CLI::parse_args(int argc, char* argv[], const Command* cmd) {
         std::string arg = argv[i];
 
         if (arg[0] == '-') {
-            // Find matching option
+            // find matching option
             const Option* matched = nullptr;
             for (const auto& opt : cmd->options) {
                 if (arg == opt.short_name || arg == opt.long_name) {
                     matched = &opt;
                     break;
                 }
-                // Handle --option=value
+                // handle --option=value
                 if (arg.find('=') != std::string::npos) {
                     std::string opt_name = arg.substr(0, arg.find('='));
                     if (opt_name == opt.long_name) {

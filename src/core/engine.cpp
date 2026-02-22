@@ -35,7 +35,7 @@ void Engine::load_from_build_dir(const std::string& build_dir) {
         throw std::runtime_error("No configuration found in " + build_dir);
     }
     
-    // Parse the config file
+    // parse the config file
     std::ifstream file(config_file);
     if (!file.is_open()) {
         throw std::runtime_error("Cannot open " + config_file);
@@ -43,7 +43,7 @@ void Engine::load_from_build_dir(const std::string& build_dir) {
     
     std::string line;
     while (std::getline(file, line)) {
-        // Simple JSON parsing - extract key fields
+        // simple json parsing extract key fields
         size_t pos;
         
         if ((pos = line.find("\"project\":")) != std::string::npos) {
@@ -85,7 +85,7 @@ void Engine::generate_build_files(const std::string& build_dir,
         throw std::runtime_error("Unknown backend: " + backend);
     }
 
-    // Save configuration as JSON
+    // save configuration as json
     std::ofstream config_out(build_dir + "/iris-config.json");
     config_out << "{\n";
     config_out << "  \"project\": \"" << m_config.project_name << "\",\n";
@@ -135,7 +135,7 @@ void Engine::generate_ninja(const std::string& build_dir) {
 
     ninja << "ninja_required_version = 1.5\n\n";
 
-    // Compiler variables
+    // compiler variables
     std::string cc = get_compiler();
     std::string cxx = get_cxx_compiler();
     
@@ -143,7 +143,7 @@ void Engine::generate_ninja(const std::string& build_dir) {
     ninja << "cxx = " << cxx << "\n";
     ninja << "ar = ar\n\n";
 
-    // Compile rules
+    // compile rules
     if (m_config.language == "c" || m_config.language == "mixed") {
         ninja << "rule cc\n";
         ninja << "  command = $cc -MMD -MF $out.d $cflags -c $in -o $out\n";
@@ -160,7 +160,7 @@ void Engine::generate_ninja(const std::string& build_dir) {
         ninja << "  description = CXX $out\n\n";
     }
 
-    // Link rules
+    // link rules
     ninja << "rule link_exe\n";
     ninja << "  command = $cxx $ldflags $in -o $out $libs\n";
     ninja << "  description = LINK $out\n\n";
@@ -173,7 +173,7 @@ void Engine::generate_ninja(const std::string& build_dir) {
     ninja << "  command = $ar rcs $out $in\n";
     ninja << "  description = AR $out\n\n";
 
-    // Build statements for each target
+    // build statements for each target
     std::vector<std::string> all_outputs;
 
     for (const auto& target : m_config.targets) {
@@ -182,7 +182,7 @@ void Engine::generate_ninja(const std::string& build_dir) {
         std::string link_flags = get_link_flags(target);
         std::string libs = get_libs(target);
 
-        // Resolve source files
+        // resolve source files
         auto sources = resolve_sources(target);
         
         if (sources.empty()) {
@@ -192,12 +192,12 @@ void Engine::generate_ninja(const std::string& build_dir) {
 
         ninja << "# Target: " << target.name << "\n";
 
-        // Compile each source file
+        // compile each source file
         for (const auto& src : sources) {
             fs::path src_path(src);
             std::string obj_name = src_path.stem().string();
             
-            // Handle duplicate filenames from different directories
+            // handle duplicate filenames from different directories
             std::string rel_path = src;
             std::replace(rel_path.begin(), rel_path.end(), '/', '_');
             std::replace(rel_path.begin(), rel_path.end(), '\\', '_');
@@ -216,7 +216,7 @@ void Engine::generate_ninja(const std::string& build_dir) {
             std::string rule = is_c ? "cc" : "cxx";
             std::string flags_var = is_c ? "cflags" : "cxxflags";
 
-            // Determine source path relative to build dir
+            // determine source path relative to build dir
             std::string src_rel = "../" + src;
             
             ninja << "build " << obj << ": " << rule << " " << src_rel << "\n";
@@ -225,7 +225,7 @@ void Engine::generate_ninja(const std::string& build_dir) {
 
         ninja << "\n";
 
-        // Link or archive
+        // link or archive
         std::string output;
         
         switch (target.type) {
@@ -283,7 +283,7 @@ void Engine::generate_ninja(const std::string& build_dir) {
         all_outputs.push_back(output);
     }
 
-    // Default target
+    // default target
     ninja << "# Default target\n";
     ninja << "build all: phony";
     for (const auto& out : all_outputs) {
@@ -295,7 +295,7 @@ void Engine::generate_ninja(const std::string& build_dir) {
 
     ninja.close();
 
-    // Create object directories
+    // create object directories
     for (const auto& target : m_config.targets) {
         fs::create_directories(build_dir + "/obj/" + target.name);
     }
@@ -317,7 +317,7 @@ void Engine::generate_makefile(const std::string& build_dir) {
 
     make << ".PHONY: all clean\n\n";
 
-    // Compiler variables
+    // compiler variables
     std::string cc = get_compiler();
     std::string cxx = get_cxx_compiler();
     
@@ -346,7 +346,7 @@ void Engine::generate_makefile(const std::string& build_dir) {
             objects.push_back(obj);
         }
 
-        // Determine output name
+        // determine output name
         std::string output;
         switch (target.type) {
             case TargetType::Executable:
@@ -371,7 +371,7 @@ void Engine::generate_makefile(const std::string& build_dir) {
 
         make << "# Target: " << target.name << "\n";
         
-        // Target rule
+        // target rule
         make << output << ":";
         for (const auto& obj : objects) {
             make << " " << obj;
@@ -397,7 +397,7 @@ void Engine::generate_makefile(const std::string& build_dir) {
         }
         make << "\n";
 
-        // Object rules
+        // object rules
         for (size_t i = 0; i < sources.size(); i++) {
             fs::path src_path(sources[i]);
             std::string ext = src_path.extension().string();
@@ -412,14 +412,14 @@ void Engine::generate_makefile(const std::string& build_dir) {
         }
     }
 
-    // All target
+    // all target
     make << "all:";
     for (const auto& out : all_outputs) {
         make << " " << out;
     }
     make << "\n\n";
 
-    // Clean target
+    // clean target
     make << "clean:\n";
     make << "\t@echo \"  CLEAN\"\n";
     make << "\t@rm -rf obj/";
@@ -430,7 +430,7 @@ void Engine::generate_makefile(const std::string& build_dir) {
 
     make.close();
 
-    // Create object directories
+    // create object directories
     for (const auto& target : m_config.targets) {
         fs::create_directories(build_dir + "/obj/" + target.name);
     }
@@ -442,18 +442,17 @@ int Engine::build(const std::string& target,
                   int jobs,
                   bool verbose,
                   ProgressCallback progress) {
+    (void)progress;
     
     if (m_build_dir.empty()) {
         m_build_dir = "build";
     }
     
-    // Determine number of jobs
     if (jobs == 0) {
         jobs = static_cast<int>(std::thread::hardware_concurrency());
         if (jobs == 0) jobs = 4;
     }
 
-    // Check for build files
     bool has_ninja = fs::exists(m_build_dir + "/build.ninja");
     bool has_make = fs::exists(m_build_dir + "/Makefile");
     
@@ -468,43 +467,124 @@ int Engine::build(const std::string& target,
         if (!target.empty()) {
             cmd += " " + target;
         }
-        if (verbose) {
-            cmd += " -v";
-        }
     } else {
         cmd = "make -C " + m_build_dir + " -j" + std::to_string(jobs);
         if (!target.empty()) {
             cmd += " " + target;
         }
-        if (!verbose) {
-            cmd += " --no-print-directory";
+        cmd += " --no-print-directory";
+    }
+    
+    // capture output and parse it
+    cmd += " 2>&1";
+    
+    FILE* pipe = popen(cmd.c_str(), "r");
+    if (!pipe) {
+        throw std::runtime_error("Failed to run build command");
+    }
+    
+    std::regex ninja_re(R"(\[(\d+)/(\d+)\]\s+(\S+)\s+(.+))");
+    std::string error_output;
+    int total = 0;
+    int current = 0;
+    int failed = 0;
+    bool in_error = false;
+    
+    char buffer[512];
+    while (fgets(buffer, sizeof(buffer), pipe) != nullptr) {
+        std::string line(buffer);
+        
+        // remove trailing newline
+        if (!line.empty() && line.back() == '\n') {
+            line.pop_back();
+        }
+        
+        // skip empty lines
+        if (line.empty()) continue;
+        
+        // skip "Entering directory" messages
+        if (line.find("Entering directory") != std::string::npos) continue;
+        if (line.find("Leaving directory") != std::string::npos) continue;
+        
+        // parse ninja progress blah blah
+        std::smatch match;
+        if (std::regex_search(line, match, ninja_re)) {
+            current = std::stoi(match[1].str());
+            total = std::stoi(match[2].str());
+            std::string action = match[3].str();
+            std::string file = match[4].str();
+            
+            // clear line and show progress
+            std::cout << "\r\033[K";
+            
+            ui::Terminal::print_styled("  [", ui::Color::Gray);
+            std::cout << current << "/" << total;
+            ui::Terminal::print_styled("] ", ui::Color::Gray);
+            
+            if (action == "CXX" || action == "CC") {
+                ui::Terminal::print_styled("CC  ", ui::Color::Cyan);
+            } else if (action == "LINK") {
+                ui::Terminal::print_styled("LINK", ui::Color::Magenta);
+            } else if (action == "AR") {
+                ui::Terminal::print_styled("AR  ", ui::Color::Yellow);
+            } else {
+                ui::Terminal::print_styled(action + " ", ui::Color::White);
+            }
+            
+            // shorten path
+            std::string display = file;
+            if (display.length() > 50) {
+                size_t slash = display.rfind('/');
+                if (slash != std::string::npos) {
+                    display = "..." + display.substr(slash);
+                }
+            }
+            std::cout << display << std::flush;
+            
+            in_error = false;
+        }
+        else if (line.find("FAILED") != std::string::npos) {
+            std::cout << "\r\033[K";
+            ui::Terminal::print_styled("  FAIL ", ui::Color::Red, ui::Style::Bold);
+            std::cout << "\n";
+            failed++;
+            in_error = true;
+        }
+        else if (line.find("error:") != std::string::npos || in_error) {
+            // show compiler errors
+            if (verbose || in_error) {
+                if (line.find("error:") != std::string::npos) {
+                    std::cout << "       " << line << "\n";
+                }
+            }
+            error_output += line + "\n";
+        }
+        else if (line.find("warning:") != std::string::npos && verbose) {
+            // show warnings in verbose mode
+            std::cout << "\r\033[K";
+            ui::Terminal::print_styled("  WARN ", ui::Color::Yellow);
+            std::cout << line << "\n";
         }
     }
-
-    // Report progress if callback provided
-    if (progress) {
-        progress("Building", 0, 100);
-    }
-
-    int result = std::system(cmd.c_str());
-
-    if (progress) {
-        progress("Building", 100, 100);
-    }
-
-    return WEXITSTATUS(result);
+    
+    int status = pclose(pipe);
+    int result = WEXITSTATUS(status);
+    
+    // clear progress line
+    std::cout << "\r\033[K";
+    
+    return result;
 }
-
 std::vector<std::string> Engine::resolve_sources(const Target& target) {
     std::vector<std::string> result;
 
     for (const auto& pattern : target.sources) {
         if (pattern.find('*') != std::string::npos) {
-            // Glob pattern
+            // glob pattern
             auto files = expand_glob(pattern);
             result.insert(result.end(), files.begin(), files.end());
         } else {
-            // Direct file path
+            // direct file path
             if (fs::exists(pattern)) {
                 result.push_back(pattern);
             } else {
@@ -513,7 +593,7 @@ std::vector<std::string> Engine::resolve_sources(const Target& target) {
         }
     }
 
-    // Remove duplicates while preserving order
+    // remove duplicates while preserving order
     std::vector<std::string> unique;
     std::set<std::string> seen;
     for (const auto& s : result) {
@@ -529,10 +609,10 @@ std::vector<std::string> Engine::resolve_sources(const Target& target) {
 std::vector<std::string> Engine::expand_glob(const std::string& pattern) {
     std::vector<std::string> result;
     
-    // Handle ** recursive pattern
+    // handle ** recursive pattern
     bool recursive = pattern.find("**") != std::string::npos;
     
-    // Split pattern into directory and file pattern
+    // split pattern into directory and file pattern
     std::string dir_part;
     std::string file_pattern;
     
@@ -545,7 +625,7 @@ std::vector<std::string> Engine::expand_glob(const std::string& pattern) {
         file_pattern = pattern;
     }
     
-    // Remove ** from dir_part if present
+    // remove ** from dir_part if present
     size_t double_star = dir_part.find("**");
     if (double_star != std::string::npos) {
         if (double_star == 0) {
@@ -556,7 +636,7 @@ std::vector<std::string> Engine::expand_glob(const std::string& pattern) {
         recursive = true;
     }
     
-    // Convert file pattern to regex
+    // convert file pattern to regex
     std::string regex_str = "^";
     for (char c : file_pattern) {
         switch (c) {
@@ -598,7 +678,7 @@ std::vector<std::string> Engine::expand_glob(const std::string& pattern) {
             }
         }
     } catch (...) {
-        // Ignore filesystem errors
+        // ignore filesystem errors
     }
     
     std::sort(result.begin(), result.end());
@@ -609,13 +689,13 @@ std::string Engine::get_compiler() const {
         return m_config.compiler;
     }
 
-    // Check environment
+    // check environment
     const char* cc = std::getenv("CC");
     if (cc && cc[0] != '\0') {
         return cc;
     }
 
-    // Default based on language
+    // default based on language
     if (m_config.language == "c") {
         return "cc";
     }
@@ -624,13 +704,13 @@ std::string Engine::get_compiler() const {
 }
 
 std::string Engine::get_cxx_compiler() const {
-    // Check environment
+    // check environment
     const char* cxx = std::getenv("CXX");
     if (cxx && cxx[0] != '\0') {
         return cxx;
     }
     
-    // Derive from C compiler
+    // derive from C compiler
     std::string cc = get_compiler();
     if (cc == "gcc" || cc == "cc") {
         return "g++";
@@ -645,12 +725,12 @@ std::string Engine::get_cxx_compiler() const {
 std::string Engine::get_compile_flags(const Target& target) const {
     std::stringstream flags;
 
-    // Language standard
+    // language standard
     if (!m_config.standard.empty()) {
         flags << "-std=" << m_config.standard << " ";
     }
 
-    // Build type flags
+    // build type flags
     if (m_config.build_type == "debug") {
         flags << "-g -O0 ";
     } else if (m_config.build_type == "release") {
@@ -661,27 +741,27 @@ std::string Engine::get_compile_flags(const Target& target) const {
         flags << "-Os -DNDEBUG ";
     }
 
-    // Global flags
+    // global flags
     for (const auto& f : m_config.global_flags) {
         flags << f << " ";
     }
 
-    // Target flags
+    // Ttarget flags
     for (const auto& f : target.flags) {
         flags << f << " ";
     }
 
-    // Global includes
+    // global includes
     for (const auto& inc : m_config.global_includes) {
         flags << "-I../" << inc << " ";
     }
 
-    // Target includes
+    // target includes
     for (const auto& inc : target.includes) {
         flags << "-I../" << inc << " ";
     }
 
-    // Global defines
+    // global defines
     for (const auto& [key, val] : m_config.global_defines) {
         flags << "-D" << key;
         if (!val.empty()) {
@@ -690,7 +770,7 @@ std::string Engine::get_compile_flags(const Target& target) const {
         flags << " ";
     }
 
-    // Target defines
+    // target defines
     for (const auto& [key, val] : target.defines) {
         flags << "-D" << key;
         if (!val.empty()) {
@@ -699,7 +779,7 @@ std::string Engine::get_compile_flags(const Target& target) const {
         flags << " ";
     }
 
-    // Position independent code for shared libraries
+    // position independent code for shared libraries
     if (target.type == TargetType::SharedLibrary) {
         flags << "-fPIC ";
     }
@@ -710,12 +790,12 @@ std::string Engine::get_compile_flags(const Target& target) const {
 std::string Engine::get_link_flags(const Target& target) const {
     std::stringstream flags;
 
-    // Build type
+    // build type
     if (m_config.build_type == "release" || m_config.build_type == "minsize") {
         flags << "-s ";  // Strip symbols
     }
 
-    // Target link flags
+    // target link flags
     for (const auto& f : target.link_flags) {
         flags << f << " ";
     }
@@ -726,9 +806,9 @@ std::string Engine::get_link_flags(const Target& target) const {
 std::string Engine::get_libs(const Target& target) const {
     std::stringstream libs;
 
-    // Link against dependencies
+    // link against dependencies
     for (const auto& dep_name : target.dependencies) {
-        // Check if it's an internal target
+        // check if its an internal target
         bool is_internal = false;
         for (const auto& t : m_config.targets) {
             if (t.name == dep_name) {
@@ -743,7 +823,7 @@ std::string Engine::get_libs(const Target& target) const {
         }
         
         if (!is_internal) {
-            // Assume it's an external library
+            // assume its an external library
             libs << "-l" << dep_name << " ";
         }
     }
@@ -751,7 +831,7 @@ std::string Engine::get_libs(const Target& target) const {
     return libs.str();
 }
 
-// Dependency tracking
+// dependency tracking
 
 std::vector<std::string> Engine::get_build_order() const {
     Graph graph(m_config);
@@ -764,7 +844,7 @@ std::vector<std::string> Engine::get_build_order() const {
 }
 
 bool Engine::needs_rebuild(const std::string& target_name) const {
-    // Find the target
+    // find the target
     const Target* target = nullptr;
     for (const auto& t : m_config.targets) {
         if (t.name == target_name) {
@@ -777,7 +857,7 @@ bool Engine::needs_rebuild(const std::string& target_name) const {
         return true;
     }
     
-    // Determine output path
+    // determine output path
     std::string output;
     switch (target->type) {
         case TargetType::Executable:
@@ -798,7 +878,7 @@ bool Engine::needs_rebuild(const std::string& target_name) const {
         return true;
     }
     
-    // Check if any source is newer than output
+    // check if any source is newer than output
     auto output_time = fs::last_write_time(output);
     
     auto sources = const_cast<Engine*>(this)->resolve_sources(*target);

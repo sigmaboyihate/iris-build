@@ -34,7 +34,7 @@ private:
     std::vector<Token> m_tokens;
     size_t m_current = 0;
 
-    // Parsing methods
+    // parsing methods
     StmtPtr parse_statement();
     StmtPtr parse_project_block();
     StmtPtr parse_target_block(const std::string& type);
@@ -62,7 +62,7 @@ private:
     ExprPtr parse_array();
     ExprPtr parse_hash();
     
-    // Token helpers
+    // token helpers
     Token current_token() const;
     Token previous_token() const;
     Token advance();

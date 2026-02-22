@@ -9,7 +9,7 @@
 
 namespace iris::util::hash {
 
-// Simple xxHash implementation (xxHash64)
+// simple xxHash implementation (xxHash64)
 static const uint64_t PRIME64_1 = 0x9E3779B185EBCA87ULL;
 static const uint64_t PRIME64_2 = 0xC2B2AE3D27D4EB4FULL;
 static const uint64_t PRIME64_3 = 0x165667B19E3779F9ULL;
@@ -144,21 +144,21 @@ uint64_t fast_hash(const void* data, size_t size) {
     return xxhash64_impl(data, size);
 }
 
-// Simple hash implementations (not cryptographically secure)
-// For a real build system, you'd want to use OpenSSL or similar
+// simple hash implementations (not cryptographically secure)
+// will implement more secure stuff like openssl once this gets big, or contribs can do it, be my guest
 
 std::string md5(const std::string& data) {
-    // Simplified - just use xxhash and format differently
+    // simplified
     return xxhash(data);
 }
 
 std::string sha1(const std::string& data) {
-    // Simplified - just use xxhash
+    // simplified more
     return xxhash(data);
 }
 
 std::string sha256(const std::string& data) {
-    // Simplified - combine two xxhash calls
+    // simplified but combine two xxhash calls
     uint64_t h1 = xxhash64_impl(data.data(), data.size(), 0);
     uint64_t h2 = xxhash64_impl(data.data(), data.size(), h1);
     
@@ -205,10 +205,10 @@ std::string build_cache_key(const std::string& command,
                             const std::map<std::string, std::string>& env) {
     std::string key_data;
     
-    // Add command
+    // add command
     key_data += "cmd:" + command + "\n";
     
-    // Add sorted inputs with their hashes
+    // add sorted inputs with their hashes
     std::vector<std::string> sorted_inputs = inputs;
     std::sort(sorted_inputs.begin(), sorted_inputs.end());
     
@@ -217,7 +217,7 @@ std::string build_cache_key(const std::string& command,
         key_data += "in:" + input + ":" + input_hash + "\n";
     }
     
-    // Add sorted environment variables
+    // add sorted environment variables
     std::vector<std::pair<std::string, std::string>> sorted_env(env.begin(), env.end());
     std::sort(sorted_env.begin(), sorted_env.end());
     

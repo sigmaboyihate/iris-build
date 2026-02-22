@@ -56,7 +56,7 @@ Examples:
 
 void print_variables(const calc::Calculator& calc) {
     std::cout << "\nDefined variables:" << std::endl;
-    // Note: This would need accessor to internal evaluator
+    // note: this would need accessor to internal evaluator
     std::cout << "  pi = 3.14159..." << std::endl;
     std::cout << "  e = 2.71828..." << std::endl;
     std::cout << "  tau = 6.28318..." << std::endl;
@@ -66,7 +66,7 @@ void print_variables(const calc::Calculator& calc) {
 int main(int argc, char* argv[]) {
     calc::Calculator calculator;
     
-    // If arguments provided, evaluate them directly
+    // if arguments given uh it works
     if (argc > 1) {
         std::string expression;
         for (int i = 1; i < argc; i++) {
@@ -85,14 +85,14 @@ int main(int argc, char* argv[]) {
         }
     }
     
-    // Interactive mode
+    // interactive mode
     print_banner();
     
     std::string line;
     std::cout << ">>> ";
     
     while (std::getline(std::cin, line)) {
-        // Trim whitespace
+        // trim whitespace
         size_t start = line.find_first_not_of(" \t");
         size_t end = line.find_last_not_of(" \t");
         if (start == std::string::npos) {
@@ -101,7 +101,7 @@ int main(int argc, char* argv[]) {
         }
         line = line.substr(start, end - start + 1);
         
-        // Handle commands
+        // hanlde commands
         if (line == "quit" || line == "exit" || line == "q") {
             std::cout << "Goodbye!" << std::endl;
             break;
@@ -126,7 +126,7 @@ int main(int argc, char* argv[]) {
             continue;
         }
         
-        // Evaluate expression
+        // evvaluate expressions
         try {
             double result = calculator.calculate(line);
             std::cout << "= " << std::setprecision(15) << result << std::endl;

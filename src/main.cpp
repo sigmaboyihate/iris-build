@@ -1,11 +1,3 @@
-/*
- * Iris Build System
- * A modern build system with a unique scripting language
- *
- * Copyright (c) 2026 Iris Build Authors
- * Licensed under GPL v3 License
- */
-
 #include "cli/cli.hpp"
 #include "ui/terminal.hpp"
 
