@@ -18,7 +18,14 @@ void BuildProgress::compile(const std::string& file, int current, int total) {
     std::cout << current << "/" << total;
     Terminal::print_styled("] ", Color::Gray);
     
-    Terminal::print_styled("CC ", Color::Cyan);
+    // detect file type from extension
+    std::string ext;
+    size_t dot = file.rfind('.');
+    if (dot != std::string::npos) {
+        ext = file.substr(dot);
+    }
+    bool is_cpp = (ext == ".cpp" || ext == ".cxx" || ext == ".cc" || ext == ".C");
+    Terminal::print_styled(is_cpp ? "CXX " : "CC  ", Color::Cyan);
     std::cout << short_path(file) << std::flush;
 }
 

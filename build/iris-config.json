@@ -1,13 +1,13 @@
 {
-  "project": "hello",
-  "version": "1.0.0",
-  "language": "cpp",
+  "project": "iris",
+  "version": "0.1.0",
+  "language": "mixed",
   "standard": "c++17",
   "build_type": "",
   "backend": "ninja",
   "targets": [
     {
-      "name": "hello",
+      "name": "iris",
       "type": "executable"
     }
   ]

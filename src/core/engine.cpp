@@ -522,7 +522,7 @@ int Engine::build(const std::string& target,
             ui::Terminal::print_styled("] ", ui::Color::Gray);
             
             if (action == "CXX" || action == "CC") {
-                ui::Terminal::print_styled("CC  ", ui::Color::Cyan);
+                ui::Terminal::print_styled(action == "CXX" ? "CXX " : "CC  ", ui::Color::Cyan);
             } else if (action == "LINK") {
                 ui::Terminal::print_styled("LINK", ui::Color::Magenta);
             } else if (action == "AR") {
@@ -568,14 +568,14 @@ int Engine::build(const std::string& target,
     }
     
     int status = pclose(pipe);
-    int result = WEXITSTATUS(status);
+    int result = WIFEXITED(status) ? WEXITSTATUS(status) : -1;
     
     // clear progress line
     std::cout << "\r\033[K";
     
     return result;
 }
-std::vector<std::string> Engine::resolve_sources(const Target& target) {
+std::vector<std::string> Engine::resolve_sources(const Target& target) const {
     std::vector<std::string> result;
 
     for (const auto& pattern : target.sources) {
@@ -606,7 +606,7 @@ std::vector<std::string> Engine::resolve_sources(const Target& target) {
 
     return unique;
 }
-std::vector<std::string> Engine::expand_glob(const std::string& pattern) {
+std::vector<std::string> Engine::expand_glob(const std::string& pattern) const {
     std::vector<std::string> result;
     
     // handle ** recursive pattern
@@ -881,7 +881,7 @@ bool Engine::needs_rebuild(const std::string& target_name) const {
     // check if any source is newer than output
     auto output_time = fs::last_write_time(output);
     
-    auto sources = const_cast<Engine*>(this)->resolve_sources(*target);
+    auto sources = resolve_sources(*target);
     for (const auto& src : sources) {
         if (fs::exists(src)) {
             if (fs::last_write_time(src) > output_time) {

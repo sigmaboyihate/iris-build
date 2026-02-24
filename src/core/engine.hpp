@@ -83,13 +83,13 @@ namespace iris::core {
         void generate_ninja(const std::string& build_dir);
         void generate_makefile(const std::string& build_dir);
 
-        std::vector<std::string> resolve_sources(const Target& target);
+        std::vector<std::string> resolve_sources(const Target& target) const;
         std::string get_compiler() const;
         std::string get_compile_flags(const Target& target) const;
         std::string get_link_flags(const Target& target) const;
     std::string get_libs(const Target& target) const;
     std::string get_cxx_compiler() const;
-    std::vector<std::string> expand_glob(const std::string& pattern);
+    std::vector<std::string> expand_glob(const std::string& pattern) const;
     std::vector<std::string> get_build_order() const;
     bool needs_rebuild(const std::string& target_name) const;
     };

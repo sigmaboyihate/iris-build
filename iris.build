@@ -1,6 +1,6 @@
 project "iris" do
     version = "0.1.0"
-    lang = :cpp
+    lang = :mixed
     std = "c++17"
 end
 
@@ -14,6 +14,8 @@ compiler do
     if buildtype == "release" do
         flags = ["-O3", "-DNDEBUG", "-march=native"]
     end
+    
+    asflags = ["-g"]
 end
 
 executable "iris" do
@@ -33,5 +35,13 @@ executable "iris" do
         "src/util/fs.cpp",
         "src/util/hash.cpp"
     ]
+    
+    if arch() == "x86_64" do
+        sources += [
+            "src/util/hash_x64.S",
+            "src/util/memopt_x64.S"
+        ]
+    end
+    
     includes = ["src/"]
 end

@@ -42,7 +42,7 @@ namespace iris::cli {
     private:
         std::string m_name;
         std::string m_description;
-        std::string m_version = "0.1.0";
+        std::string m_version = "0.1.1";
 
         std::vector<Command> m_commands;
         std::vector<Option> m_global_options;

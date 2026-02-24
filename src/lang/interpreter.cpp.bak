@@ -5,7 +5,6 @@
 #include <filesystem>
 #include <algorithm>
 #include <regex>
-#include <array>
 #include <fstream>
 
 namespace fs = std::filesystem;
@@ -119,86 +118,56 @@ void Interpreter::register_builtins() {
         }
         
         std::string pattern = args[0]->as_string();
-        bool recursive = pattern.find("**") != std::string::npos;
+        fs::path base_path = fs::path(pattern).parent_path();
+        if (base_path.empty()) base_path = ".";
         
-        std::string dir_part;
-        std::string file_pattern;
+        std::string glob_pattern = fs::path(pattern).filename().string();
         
-        size_t last_slash = pattern.rfind('/');
-        if (last_slash != std::string::npos) {
-            dir_part = pattern.substr(0, last_slash);
-            file_pattern = pattern.substr(last_slash + 1);
-        } else {
-            dir_part = ".";
-            file_pattern = pattern;
-        }
+        // simple glob matching - convert glob to regex
+        std::string regex_pattern = glob_pattern;
+        std::string final_regex;
         
-        size_t double_star = dir_part.find("**");
-        if (double_star != std::string::npos) {
-            if (double_star == 0) {
-                dir_part = ".";
+        for (size_t i = 0; i < regex_pattern.size(); i++) {
+            char c = regex_pattern[i];
+            if (c == '*' && i + 1 < regex_pattern.size() && regex_pattern[i+1] == '*') {
+                final_regex += ".*";
+                i++;
+            } else if (c == '*') {
+                final_regex += "[^/]*";
+            } else if (c == '?') {
+                final_regex += ".";
+            } else if (c == '.') {
+                final_regex += "\\.";
             } else {
-                dir_part = dir_part.substr(0, double_star);
-                if (!dir_part.empty() && dir_part.back() == '/') {
-                    dir_part.pop_back();
-                }
+                final_regex += c;
             }
-            recursive = true;
         }
-        
-        std::string regex_str = "^";
-        for (char c : file_pattern) {
-            if (c == '*') regex_str += ".*";
-            else if (c == '?') regex_str += ".";
-            else if (c == '.') regex_str += "\\.";
-            else regex_str += c;
-        }
-        regex_str += "$";
         
         std::regex re;
         try {
-            re = std::regex(regex_str);
+            re = std::regex(final_regex);
         } catch (...) {
             result->data = files;
             return result;
         }
         
-        if (!fs::exists(dir_part)) {
-            result->data = files;
-            return result;
-        }
-        
-        try {
-            if (recursive) {
-                for (const auto& entry : fs::recursive_directory_iterator(dir_part)) {
-                    if (entry.is_regular_file()) {
-                        std::string filename = entry.path().filename().string();
-                        if (std::regex_match(filename, re)) {
-                            auto file_val = std::make_shared<IrisValue>();
-                            file_val->data = entry.path().string();
-                            files.push_back(file_val);
-                        }
-                    }
-                }
-            } else {
-                for (const auto& entry : fs::directory_iterator(dir_part)) {
-                    if (entry.is_regular_file()) {
-                        std::string filename = entry.path().filename().string();
-                        if (std::regex_match(filename, re)) {
-                            auto file_val = std::make_shared<IrisValue>();
-                            file_val->data = entry.path().string();
-                            files.push_back(file_val);
-                        }
+        if (fs::exists(base_path)) {
+            for (const auto& entry : fs::recursive_directory_iterator(base_path)) {
+                if (entry.is_regular_file()) {
+                    std::string filename = entry.path().filename().string();
+                    if (std::regex_match(filename, re)) {
+                        auto file_val = std::make_shared<IrisValue>();
+                        file_val->data = entry.path().string();
+                        files.push_back(file_val);
                     }
                 }
             }
-        } catch (...) {
-            // ignore filesystem errors
         }
         
         result->data = files;
         return result;
     };
+    
     // find_package function locate system packages
     m_native_functions["find_package"] = [this](const std::vector<IrisValuePtr>& args) {
         auto result = std::make_shared<IrisValue>();
