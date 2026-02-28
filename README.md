@@ -58,7 +58,7 @@ Developed by solaris and clad.
 ### Building from Source
 
 ```bash
-git clone https://github.com/iris-build/iris
+git clone https://github.com/sigmaboyihate/iris-build
 cd iris
 make -j$(nproc)
 ````
