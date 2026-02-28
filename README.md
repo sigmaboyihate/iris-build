@@ -59,7 +59,7 @@ Developed by solaris and clad.
 
 ```bash
 git clone https://github.com/sigmaboyihate/iris-build
-cd iris
+cd iris-build
 make -j$(nproc)
 ````
 
