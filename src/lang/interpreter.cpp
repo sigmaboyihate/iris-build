@@ -7,6 +7,7 @@
 #include <regex>
 #include <array>
 #include <fstream>
+#include <sstream>
 
 namespace fs = std::filesystem;
 
