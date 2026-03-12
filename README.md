@@ -1,4 +1,5 @@
 # Iris Build System
+### Makes writing a build script not painful!
 
 Iris is a build system for C and C++ projects. It uses a custom build language to describe project structure and compilation settings, then generates Ninja or Make files for fast, incremental builds.
 
